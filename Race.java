@@ -47,31 +47,28 @@ public class Race {
     private void displayRaceStatus() {
         System.out.println("\nRace progress:");
         for (Horse horse : horses) {
-            if (horse.hasFallen()) {
-                System.out.printf("%s has fallen!\n", horse.getName());
-            } else {
-                int position = horse.getDistanceTravelled();
-                StringBuilder track = new StringBuilder("|");
-                for (int i = 0; i < raceLength; i++) {
-                    if (i == position) {
-                        track.append(horse.getSymbol());
-                    } else {
-                        track.append(".");
-                    }
+            StringBuilder track = new StringBuilder("|");
+            for (int i = 0; i < raceLength; i++) {
+                if (i == horse.getDistanceTravelled() && horse.hasFallen()) {
+                    track.append('X');
+                } else if (i == horse.getDistanceTravelled()) {
+                    track.append(horse.getSymbol());
+                } else {
+                    track.append(".");
                 }
-                track.append("| " + horse.getName() + " (Confidence: " + horse.getConfidence() + ")");
-                System.out.println(track);
             }
+            track.append("| " + horse.getName() + " (Confidence: " + horse.getConfidence() + ")");
+            System.out.println(track);
         }
         System.out.println();
     }
 
     public static void main(String[] args) {
-        Horse[] horses = new Horse[3];
-        horses[0] = new Horse('P', "PIPPI LONGSTOCKING", 0.6);
-        horses[1] = new Horse('K', "KOKOMO", 0.6);
-        horses[2] = new Horse('E', "EL JEFE", 0.4);
-
+        Horse[] horses = new Horse[]{
+            new Horse('P', "PIPPI LONGSTOCKING", 0.6),
+            new Horse('K', "KOKOMO", 0.6),
+            new Horse('E', "EL JEFE", 0.4)
+        };
         Race race = new Race(50, horses);  // Assuming the race length is 50 meters
         race.startRace();
     }
