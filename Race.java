@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Scanner;
 
 public class Race {
     private Horse[] horses;
@@ -8,44 +9,73 @@ public class Race {
     public Race(int raceLength, Horse[] horses) {
         this.raceLength = raceLength;
         this.horses = horses;
+        resetHorses();
+    }
+
+    private void resetHorses() {
+        for (Horse horse : horses) {
+            horse.resetForNewRace();
+        }
     }
 
     public void startRace() {
         boolean raceFinished = false;
         while (!raceFinished) {
-            raceFinished = true; // Assume race finishes unless a horse still needs to move
+            raceFinished = true;
             for (Horse horse : horses) {
                 if (!horse.hasFallen() && horse.getDistanceTravelled() < raceLength) {
                     horse.moveForward();
-                    raceFinished = false; // If any horse moves, the race isn't finished
+                    raceFinished = false;
                 }
             }
             displayRaceStatus();
             try {
-                Thread.sleep(500); // Pause for half a second between each race update for better visualization
+                Thread.sleep(500); // Half-second pause for visualization
             } catch (InterruptedException e) {
                 System.out.println("Race thread interrupted.");
             }
         }
+        updateConfidence();
         displayFinishers();
     }
 
-    private void displayFinishers() {
-        // Sort horses by distance travelled in descending order, placing fallen horses last
+    private void updateConfidence() {
         Arrays.sort(horses, new Comparator<Horse>() {
             public int compare(Horse h1, Horse h2) {
-                if (h1.hasFallen() && !h2.hasFallen()) return 1;
-                if (!h1.hasFallen() && h2.hasFallen()) return -1;
-                return h2.getDistanceTravelled() - h1.getDistanceTravelled(); // Descending order
+                return h2.getDistanceTravelled() - h1.getDistanceTravelled();
             }
         });
 
+        if (horses[0].getDistanceTravelled() >= raceLength && !horses[0].hasFallen()) {
+            horses[0].increaseConfidence();
+        }
+
+        for (Horse horse : horses) {
+            if (horse.hasFallen()) {
+                horse.decreaseConfidence();
+            }
+        }
+    }
+
+    private void displayFinishers() {
         System.out.println("\nRace Results:");
         for (int i = 0; i < horses.length; i++) {
+            String suffix = "th";
+            switch ((i + 1) % 10) {
+                case 1:
+                    suffix = (i + 1) % 100 == 11 ? "th" : "st";
+                    break;
+                case 2:
+                    suffix = (i + 1) % 100 == 12 ? "th" : "nd";
+                    break;
+                case 3:
+                    suffix = (i + 1) % 100 == 13 ? "th" : "rd";
+                    break;
+            }
             if (horses[i].hasFallen()) {
-                System.out.println((i + 1) + "th Place: " + horses[i].getName() + " - DNF");
+                System.out.println((i + 1) + suffix + " Place: " + horses[i].getName() + " - DNF (Did Not Finish)");
             } else {
-                System.out.println((i + 1) + "th Place: " + horses[i].getName());
+                System.out.println((i + 1) + suffix + " Place: " + horses[i].getName());
             }
         }
     }
@@ -60,10 +90,10 @@ public class Race {
                 } else if (i == horse.getDistanceTravelled()) {
                     track.append(horse.getSymbol());
                 } else {
-                    track.append(" "); // No dots, space for clean view
+                    track.append(" ");
                 }
             }
-            track.append("| " + horse.getName() + " (Confidence: " + horse.getConfidence() + ")");
+            track.append("| " + horse.getName() + " (Confidence: " + String.format("%.2f", horse.getConfidence()) + ")");
             System.out.println(track);
         }
         System.out.println();
@@ -71,11 +101,25 @@ public class Race {
 
     public static void main(String[] args) {
         Horse[] horses = new Horse[]{
-            new Horse('P', "PIPPI LONGSTOCKING", 0.6),
-            new Horse('K', "KOKOMO", 0.6),
-            new Horse('E', "EL JEFE", 0.4)
+            new Horse('P', "Pippi Longstocking", 0.6),
+            new Horse('K', "Kokomo", 0.6),
+            new Horse('E', "El Jefe", 0.4)
         };
-        Race race = new Race(50, horses); // Assuming the race length is 50 meters
-        race.startRace();
+
+        Scanner scanner = new Scanner(System.in);
+        boolean keepRacing = true;
+
+        while (keepRacing) {
+            Race race = new Race(50, horses);
+            race.startRace();
+
+            System.out.println("Do you want to race again? (yes/no)");
+            String input = scanner.nextLine();
+            if (!input.equalsIgnoreCase("yes")) {
+                keepRacing = false;
+            }
+        }
+
+        scanner.close();
     }
 }
