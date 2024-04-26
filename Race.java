@@ -49,6 +49,12 @@ public class Race {
         if (horses[0].getDistanceTravelled() >= raceLength && !horses[0].hasFallen()) {
             horses[0].increaseConfidence();
         }
+		
+		for (int i = 1; i < horses.length; i++) {
+            if (horses[i].getDistanceTravelled() >= raceLength && !horses[i].hasFallen()) {
+                horses[i].increaseConfidenceByHalf();
+            }
+        }
 
         for (Horse horse : horses) {
             if (horse.hasFallen()) {
