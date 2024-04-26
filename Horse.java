@@ -21,7 +21,7 @@ public class Horse {
             if (random.nextDouble() < confidence) {
                 distanceTravelled += random.nextInt(3) + 1; // Moves 1 to 3 steps forward
             }
-            if (random.nextDouble() < (0.02 * (1 - confidence))) {
+            if (random.nextDouble() < (0.05 * (1 - confidence))) {
                 fallen = true;
             }
         }
