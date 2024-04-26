@@ -30,27 +30,23 @@ public class Race {
             }
             displayRaceStatus();
             try {
-                Thread.sleep(500); // Half-second pause for visualization
+                Thread.sleep(100); // Half-second pause for visualization
             } catch (InterruptedException e) {
                 System.out.println("Race thread interrupted.");
             }
         }
         updateConfidence();
         displayFinishers();
+        announceWinner();
     }
 
     private void updateConfidence() {
-        Arrays.sort(horses, new Comparator<Horse>() {
-            public int compare(Horse h1, Horse h2) {
-                return h2.getDistanceTravelled() - h1.getDistanceTravelled();
-            }
-        });
-
+        Arrays.sort(horses, Comparator.comparingInt(Horse::getDistanceTravelled).reversed());
         if (horses[0].getDistanceTravelled() >= raceLength && !horses[0].hasFallen()) {
             horses[0].increaseConfidence();
         }
-		
-		for (int i = 1; i < horses.length; i++) {
+        
+        for (int i = 1; i < horses.length; i++) {
             if (horses[i].getDistanceTravelled() >= raceLength && !horses[i].hasFallen()) {
                 horses[i].increaseConfidenceByHalf();
             }
@@ -60,6 +56,15 @@ public class Race {
             if (horse.hasFallen()) {
                 horse.decreaseConfidence();
             }
+        }
+    }
+
+    private void announceWinner() {
+        Arrays.sort(horses, Comparator.comparingInt(Horse::getDistanceTravelled).reversed());
+        if (!horses[0].hasFallen() && horses[0].getDistanceTravelled() >= raceLength) {
+            System.out.println("And the winner is " + horses[0].getName());
+        } else {
+            System.out.println("No winner, all horses have fallen or did not finish.");
         }
     }
 
