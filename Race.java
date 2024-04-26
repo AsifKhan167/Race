@@ -1,3 +1,6 @@
+import java.util.Arrays;
+import java.util.Comparator;
+
 public class Race {
     private Horse[] horses;
     private int raceLength;
@@ -24,24 +27,27 @@ public class Race {
                 System.out.println("Race thread interrupted.");
             }
         }
-        Horse winner = determineWinner();
-        if (winner != null) {
-            System.out.println("\nAnd the winner is " + winner.getName() + "!");
-        } else {
-            System.out.println("\nNo winner, all horses have fallen!");
-        }
+        displayFinishers();
     }
 
-    private Horse determineWinner() {
-        Horse winningHorse = null;
-        int maxDistance = 0;
-        for (Horse horse : horses) {
-            if (!horse.hasFallen() && horse.getDistanceTravelled() > maxDistance) {
-                maxDistance = horse.getDistanceTravelled();
-                winningHorse = horse;
+    private void displayFinishers() {
+        // Sort horses by distance travelled in descending order, placing fallen horses last
+        Arrays.sort(horses, new Comparator<Horse>() {
+            public int compare(Horse h1, Horse h2) {
+                if (h1.hasFallen() && !h2.hasFallen()) return 1;
+                if (!h1.hasFallen() && h2.hasFallen()) return -1;
+                return h2.getDistanceTravelled() - h1.getDistanceTravelled(); // Descending order
+            }
+        });
+
+        System.out.println("\nRace Results:");
+        for (int i = 0; i < horses.length; i++) {
+            if (horses[i].hasFallen()) {
+                System.out.println((i + 1) + "th Place: " + horses[i].getName() + " - DNF");
+            } else {
+                System.out.println((i + 1) + "th Place: " + horses[i].getName());
             }
         }
-        return winningHorse;
     }
 
     private void displayRaceStatus() {
@@ -54,7 +60,7 @@ public class Race {
                 } else if (i == horse.getDistanceTravelled()) {
                     track.append(horse.getSymbol());
                 } else {
-                    track.append(".");
+                    track.append(" "); // No dots, space for clean view
                 }
             }
             track.append("| " + horse.getName() + " (Confidence: " + horse.getConfidence() + ")");
@@ -69,7 +75,7 @@ public class Race {
             new Horse('K', "KOKOMO", 0.6),
             new Horse('E', "EL JEFE", 0.4)
         };
-        Race race = new Race(50, horses);  // Assuming the race length is 50 meters
+        Race race = new Race(50, horses); // Assuming the race length is 50 meters
         race.startRace();
     }
 }
